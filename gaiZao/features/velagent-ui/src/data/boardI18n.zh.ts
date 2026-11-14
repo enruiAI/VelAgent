@@ -1,0 +1,73 @@
+/**
+ * 开发板中文名 / 中文简介（按 BoardKind 映射）。
+ *
+ * 上游把这套文案直接写在 ComponentPickerModal / BoardPickerModal 里（英文），
+ * 这里集中成一份中文表，由 lib/boardI18n 里的 helper 在中文模式下取用。
+ */
+import type { BoardKind } from '../types/board';
+
+export const BOARD_NAMES_ZH: Partial<Record<BoardKind, string>> = {
+  'arduino-uno': 'Arduino Uno',
+  'arduino-nano': 'Arduino Nano',
+  'arduino-mega': 'Arduino Mega 2560',
+  'raspberry-pi-pico': '树莓派 Pico',
+  'pi-pico-w': '树莓派 Pico W',
+  'raspberry-pi-zero': '树莓派 Zero',
+  'raspberry-pi-1': '树莓派 1B+',
+  'raspberry-pi-2': '树莓派 2B',
+  'raspberry-pi-3': '树莓派 3B',
+  'raspberry-pi-4': '树莓派 4B',
+  'raspberry-pi-5': '树莓派 5',
+  esp32: 'ESP32 开发板',
+  'esp32-devkit-c-v4': 'ESP32 DevKit C V4',
+  'esp32-cam': 'ESP32-CAM 摄像头板',
+  'wemos-lolin32-lite': 'Wemos Lolin32 Lite',
+  'esp32-s3': 'ESP32-S3 开发板',
+  'xiao-esp32-s3': 'Seeed XIAO ESP32-S3',
+  'arduino-nano-esp32': 'Arduino Nano ESP32',
+  'esp32-c3': 'ESP32-C3 开发板',
+  'xiao-esp32-c3': 'Seeed XIAO ESP32-C3',
+  'aitewinrobot-esp32c3-supermini': 'ESP32-C3 SuperMini',
+  'stm32-bluepill': 'STM32 Blue Pill',
+  'stm32-blackpill': 'STM32 Black Pill',
+  'stm32-bluepill-f103cb': 'STM32 Blue Pill（F103CB）',
+  'stm32-blackpill-f401': 'STM32 Black Pill（F401）',
+  'stm32-f4-discovery': 'STM32F4 Discovery',
+  'stm32-olimex-h405': 'Olimex STM32-H405',
+  'stm32-netduino-plus2': 'Netduino Plus 2',
+  'stm32-netduino2': 'Netduino 2',
+  attiny85: 'ATtiny85 单片机',
+};
+
+export const BOARD_DESCRIPTIONS_ZH: Partial<Record<BoardKind, string>> = {
+  'arduino-uno': '8 位 AVR，32KB Flash，14 个数字 I/O',
+  'arduino-nano': '紧凑型 8 位 AVR，与 Uno 相同',
+  'arduino-mega': '8 位 AVR，256KB Flash，54 个数字 I/O',
+  'raspberry-pi-pico': 'RP2040 双核 Cortex-M0+',
+  'pi-pico-w': 'RP2040 + WiFi/蓝牙，与 Pico 同款仿真',
+  'raspberry-pi-zero': 'ARM Cortex-A7 单核 / 512MB，Linux / Python（QEMU）',
+  'raspberry-pi-1': '树莓派 1B+，Cortex-A7 级别，Linux / Python（QEMU）',
+  'raspberry-pi-2': '树莓派 2B，ARM Cortex-A7 四核，Linux / Python（QEMU）',
+  'raspberry-pi-3': 'ARM64 Cortex-A53 四核，Linux / Python（QEMU）',
+  'raspberry-pi-4': 'ARM64 Cortex-A72 四核，Linux / Python（QEMU）',
+  'raspberry-pi-5': 'ARM64 Cortex-A76 四核 + RP1 I/O，Linux / Python（QEMU）',
+  esp32: 'Xtensa LX6 双核，WiFi+蓝牙，38 个 GPIO（QEMU）',
+  'esp32-devkit-c-v4': 'ESP32 DevKit C V4，乐鑫官方板（QEMU）',
+  'esp32-cam': 'ESP32 + 200 万像素摄像头，microSD（QEMU）',
+  'wemos-lolin32-lite': '紧凑型 ESP32，支持锂电池（QEMU）',
+  'esp32-s3': 'Xtensa LX7 双核，WiFi+蓝牙，AI 加速（QEMU）',
+  'xiao-esp32-s3': 'Seeed XIAO 小尺寸，8MB Flash + PSRAM（QEMU）',
+  'arduino-nano-esp32': 'Nano 尺寸，ESP32-S3，RGB LED（QEMU）',
+  'esp32-c3': 'RISC-V 单核，WiFi+BLE，22 个 GPIO（QEMU）',
+  'xiao-esp32-c3': 'Seeed XIAO ESP32-C3 迷你板（QEMU）',
+  'aitewinrobot-esp32c3-supermini': 'ESP32-C3 SuperMini（QEMU）',
+  'stm32-bluepill': 'STM32F103C8 Cortex-M3，64KB Flash，37 个 GPIO（QEMU）',
+  'stm32-blackpill': 'STM32F411CE Cortex-M4，512KB Flash，50 个 GPIO（QEMU）',
+  'stm32-bluepill-f103cb': 'STM32F103CB Cortex-M3，128KB Flash，37 个 GPIO（QEMU）',
+  'stm32-blackpill-f401': 'STM32F401CE Cortex-M4，512KB Flash，50 个 GPIO（QEMU）',
+  'stm32-f4-discovery': 'STM32F407VG Cortex-M4，1MB Flash，4 个板载 LED（QEMU）',
+  'stm32-olimex-h405': 'Olimex STM32-H405，F405RG Cortex-M4，1MB Flash（QEMU）',
+  'stm32-netduino-plus2': 'Netduino Plus 2，STM32F405 Cortex-M4（QEMU）',
+  'stm32-netduino2': 'Netduino 2，STM32F205 Cortex-M3（QEMU，串口）',
+  attiny85: '8 位 AVR，8KB Flash，6 个 GPIO（浏览器内运行）',
+};

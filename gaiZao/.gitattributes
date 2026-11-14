@@ -1,0 +1,2 @@
+# Unified diff files keep their context lines verbatim; whitespace checks do not apply.
+patches/*.diff -whitespace

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VelAgent — AI 硬件实验台</title>
+    <meta
+      name="description"
+      content="VelAgent：可被 AI 操作的电路画布 + 代码编辑器。复用 Velxio 元件库，本地 AI 控制面 + MCP，AI 预测运行效果。"
+    />
+    <meta name="theme-color" content="#0a0c11" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // 首帧前把主题贴到 <html>，避免白闪。key 与 src/lib/theme.ts 保持一致。
+      (function () {
+        try {
+          var mode = localStorage.getItem('velxio-theme');
+          if (mode !== 'dark' && mode !== 'light' && mode !== 'system') mode = 'dark';
+          var resolved =
+            mode === 'system'
+              ? window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : mode;
+          document.documentElement.setAttribute('data-theme', resolved);
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body style="margin: 0; background: var(--color-bg-canvas, #0a0a0c)">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

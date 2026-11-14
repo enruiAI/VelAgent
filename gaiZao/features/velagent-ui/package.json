@@ -1,0 +1,44 @@
+{
+  "name": "velxio-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Velxio 前端界面（纯前端精简版：编辑器 + 电路画布，无后端、无编译、无仿真）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:embed": "vite build --config vite.embed.config.ts && node scripts/clean-embed-css.mjs && node scripts/verify-embed.mjs",
+    "check:embed": "node scripts/verify-embed.mjs",
+    "smoke:embed": "node scripts/smoke-embed.mjs",
+    "smoke:embed:browser": "node scripts/smoke-embed-browser.mjs",
+    "smoke:workspace:browser": "node scripts/smoke-workspace-browser.mjs",
+    "smoke:shared-fs:browser": "node scripts/smoke-shared-fs-browser.mjs",
+    "preview": "vite preview",
+    "postinstall": "node scripts/copy-monaco.mjs"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "@wokwi/elements": "1.9.2",
+    "i18next": "^23.16.4",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "idb-keyval": "^6.2.2",
+    "jszip": "^3.10.2",
+    "lucide-react": "^0.460.0",
+    "monaco-editor": "0.55.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-i18next": "^15.1.0",
+    "react-router-dom": "^7.13.1",
+    "zustand": "^5.0.11",
+    "@tauri-apps/api": "^2.12.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.11.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "@tauri-apps/cli": "^2.12.4"
+  }
+}

@@ -1,0 +1,4 @@
+# VelAgent brand bundle layer.
+- insert:
+    - id: velagent-brand
+      name: velagent-brand

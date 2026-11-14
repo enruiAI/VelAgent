@@ -1,0 +1,4 @@
+# 本功能的叠加配置（bundle 形态时写 dsh.bundle.patch；宿主插件用 --patch 加载）
+- insert:
+    - id: gz-example-feature
+      name: '@velagent/example-feature'

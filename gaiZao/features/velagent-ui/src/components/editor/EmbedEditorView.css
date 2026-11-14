@@ -1,0 +1,94 @@
+/* embed 代码编辑器视图：Harness dock 的「代码」页签（可伸缩 360–900px）。
+ *
+ * 类名统一加 velxio-embed 前缀，避免污染 Harness 全局样式；颜色走 VelAgent
+ * token（--color-* / --wb-*），在 Harness 的深色界面上与画布保持一致。
+ */
+.velxio-embed-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  background: var(--color-bg-canvas, #0a0a0c);
+  color: var(--color-fg-default, #f5f5f7);
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* 文件标签栏：窄容器横向滚动，不换行。 */
+.velxio-embed-editor__tabs {
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 auto;
+  gap: 2px;
+  padding: 4px 6px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  border-bottom: 1px solid var(--color-border-strong, rgba(255, 255, 255, 0.16));
+  background: var(--color-bg-surface-1, #141416);
+}
+
+.velxio-embed-editor__tab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 180px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: var(--color-fg-muted, #86868b);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.velxio-embed-editor__tab:hover {
+  color: var(--color-fg-default, #f5f5f7);
+  background: var(--color-wash-hover, rgba(255, 255, 255, 0.06));
+}
+
+.velxio-embed-editor__tab[aria-selected='true'] {
+  color: var(--color-fg-default, #f5f5f7);
+  background: var(--color-bg-canvas, #0a0a0c);
+  border-color: var(--color-border-strong, rgba(255, 255, 255, 0.16));
+}
+
+/* 未保存标记：小圆点，不占位（文件名过长时仍然可读）。 */
+.velxio-embed-editor__dirty {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-action-primary, #0071e3);
+}
+
+.velxio-embed-editor__body {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.velxio-embed-editor__empty {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--color-fg-muted, #86868b);
+}
+
+@media (max-width: 520px) {
+  .velxio-embed-editor__tab {
+    max-width: 132px;
+  }
+}
