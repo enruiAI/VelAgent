@@ -1,0 +1,174 @@
+/* VelAgent workbench dock: a resizable right-hand panel inside the Harness shell. */
+
+.dock {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--dsw-alias-bg-layer-1);
+  border-left: 0.5px solid var(--dsw-alias-border-l1);
+  box-shadow: var(--dsw-elevation-prominent);
+  color: var(--dsw-alias-label-primary);
+}
+
+.header {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 10px;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l1);
+}
+
+.brand {
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status {
+  display: inline-flex;
+  flex: none;
+  gap: 5px;
+  align-items: center;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dsw-alias-state-idle-primary);
+}
+
+.dotConnected {
+  background: var(--dsw-alias-state-success-primary);
+}
+
+.dotConnecting {
+  background: var(--dsw-alias-state-warn-primary);
+}
+
+.dotClosed {
+  background: var(--dsw-alias-state-idle-primary);
+}
+
+.dotError {
+  background: var(--dsw-alias-state-error-primary);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.control {
+  flex: none;
+  height: 24px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-sm);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  line-height: 22px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.control:focus-visible {
+  border-color: var(--dsw-alias-border-l3);
+  color: var(--dsw-alias-label-primary);
+}
+
+@media (hover: hover) {
+  .control:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-primary);
+  }
+}
+
+.launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0.5px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-sm);
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  line-height: 26px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.launcher:focus-visible {
+  border-color: var(--dsw-alias-border-l3);
+}
+
+@media (hover: hover) {
+  .launcher:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
+}
+
+/* Explains why the workbench is unavailable, such as a pre-v3 embed build. */
+.notice {
+  flex: none;
+  margin: 8px 10px 0;
+  padding: 8px 10px;
+  border: 0.5px solid var(--dsw-alias-border-l1);
+  border-radius: var(--dsw-radius-sm);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--dsw-alias-bg-base);
+}
+
+.workspace {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Covers the workbench while the embed loads, retries, or failed. */
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  z-index: 1;
+  width: 7px;
+  cursor: col-resize;
+  touch-action: none;
+}

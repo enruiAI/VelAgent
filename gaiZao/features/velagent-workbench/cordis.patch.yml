@@ -1,0 +1,4 @@
+# VelAgent workbench bundle layer, applied through the profile bundle list.
+- insert:
+    - id: velagent-workbench
+      name: velagent-workbench

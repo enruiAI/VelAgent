@@ -1,0 +1,33 @@
+{
+  "name": "velagent-brand",
+  "version": "0.2.2",
+  "private": true,
+  "type": "module",
+  "description": "VelAgent brand layer: sidebar product name, brand mark and favicon",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "engines": {
+    "dsh": ">=0.2.2-rc.2 <0.3.0"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "node ../../../gaiZao/scripts/build-features.mjs velagent-brand"
+  }
+}

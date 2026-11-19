@@ -1,0 +1,36 @@
+diff --git a/packages/client/ui-settings-account/src/client/DesktopOnboardingEntry.tsx b/packages/client/ui-settings-account/src/client/DesktopOnboardingEntry.tsx
+index dfc2a62c03..e240c4a61c 100644
+--- a/packages/client/ui-settings-account/src/client/DesktopOnboardingEntry.tsx
++++ b/packages/client/ui-settings-account/src/client/DesktopOnboardingEntry.tsx
+@@ -4,7 +4,6 @@ import type { HostObservable, InjectFace, PropsLocale, PropsRuntime } from '@dee
+ import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+ import type { AccountSnapshot } from './AccountSection.tsx'
+ import type { DesktopOnboardingProps, DesktopOnboardingState } from './onboarding-contract.ts'
+-import { OnboardingSurface } from './OnboardingSurface.tsx'
+ import { DesktopOnboarding } from './DesktopOnboarding.tsx'
+ 
+ /** Observable sources and actions supplied by the account plugin's apply closure. */
+@@ -57,8 +56,7 @@ export function DesktopOnboardingEntry({ useOnboarding, useAccount, setVisible,
+   const displayed = state.visible ? state : exiting || pendingCompletion ? lastVisible : null
+   const visible = displayed !== null || state.status === 'loading'
+   useLayoutEffect(() => { setVisible(visible) }, [setVisible, visible])
+-  if (displayed === null) return state.status === 'loading'
+-    ? <OnboardingSurface><div role="status">{props.t('onboardingLoading')}</div></OnboardingSurface> : null
++  if (displayed === null) return null
+   return <DesktopOnboarding {...props} locale={locale} state={pendingCompletion ? { ...displayed, status: 'saving' } : displayed}
+     account={account} exiting={exiting} />
+ }
+diff --git a/packages/client/ui-settings-account/src/client/onboarding-state.ts b/packages/client/ui-settings-account/src/client/onboarding-state.ts
+index 1ee8ff78a8..2da4030909 100644
+--- a/packages/client/ui-settings-account/src/client/onboarding-state.ts
++++ b/packages/client/ui-settings-account/src/client/onboarding-state.ts
+@@ -218,7 +218,8 @@ export class DesktopOnboardingController {
+     const next: DesktopOnboardingState = {
+       progress: shallowEqual(previous.progress, progress) ? previous.progress : progress,
+       creditFunded: this.creditFunded ?? false,
+-      visible: !done && signedIn && !unavailable,
++      // gaiZao-patch 0006: VelAgent skips the upstream first-run onboarding entirely.
++      visible: false,
+       status: this.completing || (this.saving && this.draft === undefined) ? 'saving' : unavailable || readFailed || accountFailed || this.error !== null ? 'error'
+         : host.status === 'loading' || account === undefined ? 'loading' : 'ready',
+       error: unavailable || readFailed ? 'settings' : this.error,

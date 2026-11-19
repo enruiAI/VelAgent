@@ -1,0 +1,278 @@
+#!/usr/bin/env node
+/**
+ * VelAgent ↔ DeepSeek Harness 桥
+ *
+ * 由 VelAgent（Rust）拉起，用一行一个 JSON 与控制端通信；内部通过 SDK JSON-RPC 协议
+ * 驱动一个独立的 dsh 运行时（--profile sdk），并把会话事件转成聊天 UI 能用的事件。
+ *
+ * 输入（stdin，每行一个 JSON）：
+ *   { "type": "prompt", "text": "..." }   发送一轮用户输入
+ *   { "type": "stop" }                    停止当前运行时（下次 prompt 重新拉起）
+ *
+ * 输出（stdout，每行一个 JSON）：
+ *   { "type": "ready",  "model": "...", "provider": "..." }
+ *   { "type": "status", "state": "running" | "idle" }
+ *   { "type": "assistant_text", "text": "..." }
+ *   { "type": "tool_start", "name": "...", "callId": "...", "arguments": "..." }
+ *   { "type": "tool_end", "callId": "...", "ok": true, "text": "..." }
+ *   { "type": "turn_end", "reason": "..." }
+ *   { "type": "done" }
+ *   { "type": "error", "message": "..." }
+ */
+
+import { spawn } from 'node:child_process'
+import { existsSync, mkdirSync } from 'node:fs'
+import { createInterface } from 'node:readline'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { randomUUID } from 'node:crypto'
+
+const here = dirname(fileURLToPath(import.meta.url))
+const repo = resolve(process.env.VELAGENT_DSH_REPO || process.env.DSH_REPO || join(here, '..', '..', 'deepseek-harness'))
+const dshHome = process.env.DSH_HOME || join(process.env.APPDATA || process.env.HOME || '.', 'Enrui', 'VelAgent', 'harness-home')
+const agentsHome = process.env.DSH_AGENTS_HOME || join(dshHome, 'agents')
+const workspace = process.env.VELAGENT_CWD || process.env.VELAGENT_WORKSPACE || dshHome
+const provider = process.env.VELAGENT_PROVIDER || 'deepseek-official'
+const model = process.env.VELAGENT_MODEL || 'deepseek-v4-flash'
+const patchPath = process.env.VELAGENT_PATCH || ''
+
+function send(obj) {
+  process.stdout.write(JSON.stringify(obj) + '\n')
+}
+
+function fail(message) {
+  send({ type: 'error', message: String(message) })
+  setTimeout(() => process.exit(1), 50)
+}
+
+function resolveTsxLoader() {
+  const candidates = [
+    join(repo, 'node_modules', 'tsx', 'dist', 'loader.mjs'),
+    join(repo, 'node_modules', 'tsx', 'dist', 'loader.js'),
+  ]
+  for (const candidate of candidates) if (existsSync(candidate)) return pathToFileURL(candidate).href
+  return null
+}
+
+const sourceBin = join(repo, 'apps', 'cli', 'src', 'bin.ts')
+const sourcePatch = join(repo, 'apps', 'cli', 'src', 'sdk-source.cordis.patch.yml')
+if (!existsSync(sourceBin)) fail('找不到 harness 源码：' + sourceBin + '（请设置 VELAGENT_DSH_REPO）')
+if (!existsSync(sourcePatch)) fail('找不到 harness 源码补丁：' + sourcePatch)
+const tsxLoader = resolveTsxLoader()
+if (!tsxLoader) fail('找不到 tsx（请先在 deepseek-harness 目录执行 pnpm install）')
+
+mkdirSync(dshHome, { recursive: true })
+mkdirSync(agentsHome, { recursive: true })
+
+const args = ['--import', tsxLoader, sourceBin, '--profile', 'sdk', '--patch', sourcePatch]
+if (patchPath && existsSync(patchPath)) args.push('--patch', patchPath)
+
+const child = spawn(process.execPath, args, {
+  cwd: repo,
+  env: {
+    ...process.env,
+    DSH_HOME: dshHome,
+    DSH_AGENTS_HOME: agentsHome,
+    TSX_TSCONFIG_PATH: join(repo, 'apps', 'cli', 'tsconfig.json'),
+    TSX_TSCONFIG_PATH_IS_WORKSPACE: '1',
+  },
+  stdio: ['pipe', 'pipe', 'pipe'],
+})
+
+let nextId = 1
+const pending = new Map()
+let sessionId = null
+let started = false
+let running = false
+let stderrTail = ''
+
+function request(method, params) {
+  const id = nextId++
+  const line = JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n'
+  child.stdin.write(line)
+  return new Promise((resolvePromise, reject) => {
+    pending.set(id, { resolve: resolvePromise, reject })
+  })
+}
+
+function notify(method, params) {
+  child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method, params }) + '\n')
+}
+
+function respond(id, result) {
+  child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, result }) + '\n')
+}
+
+function respondError(id, code, message) {
+  child.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, error: { code, message } }) + '\n')
+}
+
+function textFromContent(content) {
+  if (!Array.isArray(content)) return ''
+  return content
+    .filter((block) => block && block.type === 'text' && typeof block.text === 'string')
+    .map((block) => block.text)
+    .join('')
+}
+
+function handleNotification(message) {
+  const method = message.method
+  const params = message.params || {}
+  if (method === 'session.event') {
+    const event = params.event || {}
+    if (typeof params.sessionId === 'string' && sessionId && params.sessionId !== sessionId) return
+    if (event.type === 'assistant/message') {
+      const text = textFromContent(event.data?.message?.content)
+      if (text.trim()) send({ type: 'assistant_text', text })
+      return
+    }
+    if (event.type === 'tool/call') {
+      send({ type: 'tool_start', name: String(event.data?.name || 'tool'), callId: String(event.data?.callId || ''), arguments: String(event.data?.arguments || '') })
+      return
+    }
+    if (event.type === 'tool/result') {
+      const message = event.data?.message || {}
+      const text = textFromContent(message.content)
+      send({ type: 'tool_end', callId: String(message.toolCallId || ''), ok: message.isError !== true, text })
+      return
+    }
+    if (event.type === 'turn/end') {
+      const reason = String(event.data?.reason?.kind || event.data?.reason || '')
+      send({ type: 'turn_end', reason })
+      if (reason === 'error') {
+        send({
+          type: 'error',
+          message:
+            '模型调用失败：请先配置 DEEPSEEK_API_KEY（AI 设置里的 DeepSeek Key），' +
+            '或改用「Harness 官方界面」里的模型登录/设置。',
+        })
+      }
+      return
+    }
+    return
+  }
+  if (method === 'session.status') {
+    if (sessionId && params.sessionId !== sessionId) return
+    const state = params.status === 'running' ? 'running' : 'idle'
+    running = state === 'running'
+    send({ type: 'status', state })
+    return
+  }
+}
+
+function handleRequest(message) {
+  const method = message.method
+  const id = message.id
+  if (method === 'approval/request') {
+    respond(id, { outcome: 'cancelled' })
+    return
+  }
+  if (method === 'user-question/ask') {
+    respond(id, { cancelled: true })
+    return
+  }
+  respondError(id, -32601, 'unsupported request: ' + method)
+}
+
+const rl = createInterface({ input: child.stdout })
+rl.on('line', (line) => {
+  if (!line.trim()) return
+  let message
+  try {
+    message = JSON.parse(line)
+  } catch {
+    return
+  }
+  if (message.id !== undefined && message.method === undefined) {
+    const waiter = pending.get(message.id)
+    if (!waiter) return
+    pending.delete(message.id)
+    if (message.error) waiter.reject(new Error(message.error.message || 'JSON-RPC error'))
+    else waiter.resolve(message.result)
+    return
+  }
+  if (message.id !== undefined && message.method !== undefined) {
+    handleRequest(message)
+    return
+  }
+  if (message.method) handleNotification(message)
+})
+
+child.stderr.setEncoding('utf8')
+child.stderr.on('data', (chunk) => {
+  stderrTail = (stderrTail + chunk).slice(-4000)
+})
+
+child.on('exit', (code, signal) => {
+  send({ type: 'error', message: 'dsh 运行时退出：code=' + code + ' signal=' + signal + (stderrTail ? '\n' + stderrTail.slice(-1500) : '') })
+  process.exit(0)
+})
+
+child.on('error', (error) => {
+  send({ type: 'error', message: '启动 dsh 运行时失败：' + error.message })
+  process.exit(0)
+})
+
+async function start() {
+  if (started) return
+  started = true
+  await request('initialize', {
+    cwd: workspace,
+    provider,
+    model,
+    approvalRequests: false,
+  })
+  send({ type: 'ready', model, provider })
+  send({ type: 'status', state: 'idle' })
+}
+
+async function prompt(text) {
+  await start()
+  if (running) send({ type: 'error', message: '上一轮还在运行，请先点停止' })
+  sessionId = sessionId || 'velagent-' + randomUUID().replaceAll('-', '')
+  running = true
+  send({ type: 'status', state: 'running' })
+  await request('session/prompt', {
+    sessionId,
+    contentBlocks: [{ type: 'text', text }],
+  })
+  try {
+    await request('session/wait', { sessionId })
+  } finally {
+    running = false
+    send({ type: 'status', state: 'idle' })
+    send({ type: 'done' })
+  }
+}
+
+async function stop() {
+  send({ type: 'status', state: 'idle' })
+  try {
+    // Closing stdin makes the runtime quiesce; Rust also kills the bridge afterwards.
+    child.kill()
+  } catch {
+    /* ignore */
+  }
+  process.exit(0)
+}
+
+const input = createInterface({ input: process.stdin })
+let chain = Promise.resolve()
+input.on('line', (line) => {
+  if (!line.trim()) return
+  let message
+  try {
+    message = JSON.parse(line)
+  } catch {
+    return
+  }
+  if (message.type === 'prompt') {
+    chain = chain.then(() => prompt(String(message.text || '')).catch((error) => send({ type: 'error', message: String(error?.message || error) })))
+    return
+  }
+  if (message.type === 'stop') {
+    chain = chain.then(() => stop())
+  }
+})
+
+await start().catch((error) => fail('初始化失败：' + (error?.message || error)))

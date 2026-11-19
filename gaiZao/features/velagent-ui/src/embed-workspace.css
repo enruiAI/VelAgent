@@ -1,0 +1,32 @@
+/* 嵌入式工作台的 CSS 作用域补丁（mountWorkspace 专用）。
+ *
+ * 独立版靠 index.css / App.css 的全局 reset（*, body …）起步；embed 产物的
+ * CSS 清理脚本会把这类全局规则删掉，避免污染 Harness 界面。这里用 :where()
+ * （零特异性）在工作台挂载容器内补回等价 reset，既保持独立版观感，
+ * 又不会压过组件自己的类规则，也不会影响 Harness 其它区域。
+ */
+:where([data-velxio-workspace]) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--font-sans, system-ui, -apple-system, 'Segoe UI', sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-fg-default, #f5f5f7);
+  background: var(--color-bg-canvas, #0a0c11);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 等价于独立版 App.css 的 *{margin:0;padding:0;box-sizing:border-box}。 */
+:where([data-velxio-workspace]) *,
+:where([data-velxio-workspace]) *::before,
+:where([data-velxio-workspace]) *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

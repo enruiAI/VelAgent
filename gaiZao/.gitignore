@@ -1,0 +1,10 @@
+# gaiZao build output and dependencies (upstream .gitignore stays untouched)
+node_modules/
+dist/
+embed-dist/
+public/monaco/
+features/*/.client.bundle.cjs
+anZhuangBao/
+features/velagent-desktop/target/
+features/velagent-desktop/gen/
+*.log
